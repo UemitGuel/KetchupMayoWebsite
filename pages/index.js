@@ -1,209 +1,345 @@
-import Head from 'next/head'
+import { ethers } from "ethers";
+import abi from "./utils/KetchupOrMayoPortal.json";
+import React, { useEffect, useState } from "react";
+import { Container, Text, Button, Heading, Image, Stack, Box, Flex, Spacer, Center, Divider, Tag, TagLabel, StackDivider } from "@chakra-ui/react";
 
-export default function Home() {
+
+export default function Home(props) {
+  const [currentAccount, setCurrentAccount] = useState("");
+
+  const [allToppings, setAllToppings] = useState([]);
+  const contractAddress = "0xa5b76609931acaD8Cb51dE6Cb8B5e683171682D3";
+
+  let allToppingsLast = allToppings[allToppings.length - 1];
+  /**
+   * Create a variable here that references the abi content!
+   */
+  const contractABI = abi.abi;
+
+  const getAllToppings = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const ketchupOrMayoContract = new ethers.Contract(contractAddress, contractABI, signer);
+
+        /*
+         * Call the getAllWaves method from your Smart Contract
+         */
+        const toppings = await ketchupOrMayoContract.getAllToppings();
+
+
+        /*
+         * We only need address, timestamp, and message in our UI so let's
+         * pick those out
+         */
+        let toppingsCleaned = [];
+        toppings.forEach(topping => {
+          toppingsCleaned.push({
+            address: topping.chose,
+            timestamp: new Date(topping.timestamp * 1000),
+            message: topping.topping,
+            totalKetchup: topping.totalCountKetchup,
+            totalMayo: topping.totalCountMayo
+          });
+        });
+
+        console.log(toppingsCleaned);
+        /*
+         * Store our data in React State
+         */
+        setAllToppings(toppingsCleaned);
+      } else {
+        console.log("Ethereum object doesn't exist!")
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const checkIfWalletIsConnected = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (!ethereum) {
+        console.log("Make sure you have metamask!");
+        return;
+      } else {
+        console.log("We have the ethereum object", ethereum);
+      }
+
+      const accounts = await ethereum.request({ method: "eth_accounts" });
+
+      if (accounts.length !== 0) {
+        const account = accounts[0];
+        console.log("Found an authorized account:", account);
+        setCurrentAccount(account);
+      } else {
+        console.log("No authorized account found")
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  /**
+  * Implement your connectWallet method here
+  */
+  const connectWallet = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (!ethereum) {
+        alert("Get MetaMask!");
+        return;
+      }
+
+      const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+
+      console.log("Connected", accounts[0]);
+      setCurrentAccount(accounts[0]);
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const ketchupCount = async () => {
+    
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const ketchupOrMayoContract = new ethers.Contract(contractAddress, contractABI, signer);
+
+        let count = await ketchupOrMayoContract.getTotalCountKetchup();
+        console.log("Retrieved total ketchup count...", count.toNumber());
+
+        /*
+* Execute the actual wave from your smart contract
+*/
+        const choseKetchupTxn = await ketchupOrMayoContract.choseKetchup({ gasLimit: 300000 });
+        console.log("Mining...", choseKetchupTxn.hash);
+
+        await choseKetchupTxn.wait();
+        console.log("Mined -- ", choseKetchupTxn.hash);
+
+        count = await ketchupOrMayoContract.getTotalCountKetchup();
+        console.log("Retrieved total ketchup count...", count.toNumber());
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const mayoCount = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const ketchupOrMayoContract = new ethers.Contract(contractAddress, contractABI, signer);
+
+        let count = await ketchupOrMayoContract.getTotalCountMayo({ gasLimit: 300000 });
+        console.log("Retrieved total mayo count...", count.toNumber());
+
+        /*
+* Execute the actual wave from your smart contract
+*/
+        const choseMayoTxn = await ketchupOrMayoContract.choseMayo();
+        console.log("Mining...", choseMayoTxn.hash);
+
+        await choseMayoTxn.wait();
+        console.log("Mined -- ", choseMayoTxn.hash);
+
+        count = await ketchupOrMayoContract.getTotalCountMayo();
+        console.log("Retrieved total mayo count...", count.toNumber());
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    checkIfWalletIsConnected();
+    getAllToppings();
+    let ketchupOrMayoContract;
+
+    const onNewChoice = (from, timestamp, message, totalKetchup, totalMayo) => {
+      console.log("NewTopping", from, timestamp, message, totalKetchup, totalMayo);
+      setAllToppings(prevState => [
+        ...prevState,
+        {
+          address: from,
+          timestamp: new Date(timestamp * 1000),
+          message: message,
+          totalKetchup: totalKetchup,
+          totalMayo: totalMayo
+        },
+      ]);
+    };
+
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      ketchupOrMayoContract = new ethers.Contract(contractAddress, contractABI, signer);
+      ketchupOrMayoContract.on("NewTopping", onNewChoice);
+    }
+
+    return () => {
+      if (ketchupOrMayoContract) {
+        ketchupOrMayoContract.off("NewTopping", onNewChoice);
+      }
+    };
+  }, [])
+
   return (
-    <div className="container">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <Container maxW="container.sm" centerContent>
 
-      <main>
-        <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+      <Box maxW='32rem'>
+        <Heading mb={4}>Be part of the battle unsettled battle, ketchup vs mayo</Heading>
+        <Text fontSize='xl'>
+          POV: It´s night, you are out of the club. What a night.. But you are starving. Only one food truck around.
+          You can smell fries! YES! Your change in your poket fits perfect for one portion and.. only one topic...
+        </Text>
+        {!currentAccount && (
+          <Button size='lg' colorScheme='green' mt='24px' onClick={connectWallet}>
+            Connect your MetaMask Wallet
+          </Button>
+        )}
+      </Box>
+      <Flex w='100%'>
+        <Center py={12}>
+          <Box
+            role={'group'}
+            p={6}
+            maxW={'330px'}
+            w={'full'}
+            rounded={'lg'}
+            pos={'relative'}
+            zIndex={1}>
+            <Box
+              rounded={'lg'}
+              mt={-12}
+              pos={'relative'}
+              height={'230px'}
+              _after={{
+                transition: 'all .3s ease',
+                content: '""',
+                w: 'full',
+                h: 'full',
+                pos: 'absolute',
+                top: 5,
+                left: 0,
+                // backgroundImage: `url(${IMAGE})`,
+                filter: 'blur(15px)',
+                zIndex: -1,
+              }}
+              _groupHover={{
+                _after: {
+                  filter: 'blur(20px)',
+                },
+              }}>
+              <Image
+                rounded={'lg'}
+                height={230}
+                width={282}
+                objectFit={'cover'}
+                src='./ketchup.jpg'
+              />
+            </Box>
+            <Stack align={'center'}>
+              <Button size='lg' colorScheme='green' mt='24px' onClick={ketchupCount} loadingText='Transaction in Progress' isDisabled={currentAccount ? false : true}>
+                Ketchup, of course!
+              </Button>
+              {
+                allToppingsLast != null &&
+                <Tag size='lg' key={'ketchup'} variant='outline' colorScheme='green'>
+                  <TagLabel>Total Ketchup: {allToppingsLast.totalKetchup.toString()}</TagLabel>
+                </Tag>
+              }
+            </Stack>
+          </Box>
+        </Center>
 
-        <p className="description">
-          Get started by editing <code>pages/index.js</code>
-        </p>
+        <Center py={12}>
+          <Box
+            role={'group'}
+            p={6}
+            maxW={'330px'}
+            w={'full'}
+            rounded={'lg'}
+            pos={'relative'}
+            zIndex={1}>
+            <Box
 
-        <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className="card">
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="card"
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="card"
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel" className="logo" />
-        </a>
-      </footer>
-
-      <style jsx>{`
-        .container {
-          min-height: 100vh;
-          padding: 0 0.5rem;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-
-        main {
-          padding: 5rem 0;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer {
-          width: 100%;
-          height: 100px;
-          border-top: 1px solid #eaeaea;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer img {
-          margin-left: 0.5rem;
-        }
-
-        footer a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        a {
-          color: inherit;
-          text-decoration: none;
-        }
-
-        .title a {
-          color: #0070f3;
-          text-decoration: none;
-        }
-
-        .title a:hover,
-        .title a:focus,
-        .title a:active {
-          text-decoration: underline;
-        }
-
-        .title {
-          margin: 0;
-          line-height: 1.15;
-          font-size: 4rem;
-        }
-
-        .title,
-        .description {
-          text-align: center;
-        }
-
-        .description {
-          line-height: 1.5;
-          font-size: 1.5rem;
-        }
-
-        code {
-          background: #fafafa;
-          border-radius: 5px;
-          padding: 0.75rem;
-          font-size: 1.1rem;
-          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-        }
-
-        .grid {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-wrap: wrap;
-
-          max-width: 800px;
-          margin-top: 3rem;
-        }
-
-        .card {
-          margin: 1rem;
-          flex-basis: 45%;
-          padding: 1.5rem;
-          text-align: left;
-          color: inherit;
-          text-decoration: none;
-          border: 1px solid #eaeaea;
-          border-radius: 10px;
-          transition: color 0.15s ease, border-color 0.15s ease;
-        }
-
-        .card:hover,
-        .card:focus,
-        .card:active {
-          color: #0070f3;
-          border-color: #0070f3;
-        }
-
-        .card h3 {
-          margin: 0 0 1rem 0;
-          font-size: 1.5rem;
-        }
-
-        .card p {
-          margin: 0;
-          font-size: 1.25rem;
-          line-height: 1.5;
-        }
-
-        .logo {
-          height: 1em;
-        }
-
-        @media (max-width: 600px) {
-          .grid {
-            width: 100%;
-            flex-direction: column;
-          }
-        }
-      `}</style>
-
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
-        }
-
-        * {
-          box-sizing: border-box;
-        }
-      `}</style>
-    </div>
-  )
+              rounded={'lg'}
+              mt={-12}
+              pos={'relative'}
+              height={'230px'}
+              _after={{
+                transition: 'all .3s ease',
+                content: '""',
+                w: 'full',
+                h: 'full',
+                pos: 'absolute',
+                top: 5,
+                left: 0,
+                // backgroundImage: `url(${IMAGE})`,
+                filter: 'blur(15px)',
+                zIndex: -1,
+              }}
+              _groupHover={{
+                _after: {
+                  filter: 'blur(20px)',
+                },
+              }}>
+              <Image
+                rounded={'lg'}
+                height={230}
+                width={282}
+                objectFit={'cover'}
+                src='./mayo.jpg'
+              />
+            </Box>
+            <Stack align={'center'}>
+              <Button size='lg' colorScheme='green' mt='24px' onClick={mayoCount} isDisabled={currentAccount ? false : true}>
+                Mayo, obviously!
+              </Button>
+              {
+                allToppingsLast != null &&
+                <Tag size='lg' key={'mayo'} variant='outline' colorScheme='green'>
+                  <TagLabel>Total Mayo: {allToppingsLast.totalMayo.toString()}</TagLabel>
+                </Tag>
+              }
+            </Stack>
+          </Box>
+        </Center>
+      </Flex>
+      <Heading>Who voted how?</Heading>
+      <Divider />
+      {
+        allToppings.reverse().map((topping, index) => {
+          return (
+            <Stack>
+              <Text>Address: {topping.address}</Text>
+              <Text>Time: {topping.timestamp.toString()}</Text>
+              <Text>Message: {topping.message}</Text>
+              <Text>Total Ketchup: {topping.totalKetchup.toString()}</Text>
+              <Text>Total Mayo: {topping.totalMayo.toString()}</Text>
+              <Divider />
+            </Stack>
+          )
+        })
+      }
+    </Container >
+  );
 }
