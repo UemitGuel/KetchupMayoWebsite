@@ -8,7 +8,7 @@ export default function Home(props) {
   const [currentAccount, setCurrentAccount] = useState("");
 
   const [allToppings, setAllToppings] = useState([]);
-  const contractAddress = "0xa5b76609931acaD8Cb51dE6Cb8B5e683171682D3";
+  const contractAddress = "0x0aEFf4F5EF04262EA0B83AE89FD869436b3654d8";
 
   let allToppingsLast = allToppings[allToppings.length - 1];
   /**
@@ -99,6 +99,7 @@ export default function Home(props) {
 
       console.log("Connected", accounts[0]);
       setCurrentAccount(accounts[0]);
+      getAllToppings();
     } catch (error) {
       console.log(error)
     }
