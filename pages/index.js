@@ -8,7 +8,7 @@ export default function Home(props) {
   const [currentAccount, setCurrentAccount] = useState("");
 
   const [allToppings, setAllToppings] = useState([]);
-  const contractAddress = "0x0aEFf4F5EF04262EA0B83AE89FD869436b3654d8";
+  const contractAddress = "0xF7338Ab5197361CBF64497E8B3bD84871E14bA90";
 
   let allToppingsLast = allToppings[allToppings.length - 1];
   /**
@@ -75,6 +75,7 @@ export default function Home(props) {
         const account = accounts[0];
         console.log("Found an authorized account:", account);
         setCurrentAccount(account);
+        getAllToppings();
       } else {
         console.log("No authorized account found")
       }
@@ -117,6 +118,7 @@ export default function Home(props) {
 
         let count = await ketchupOrMayoContract.getTotalCountKetchup();
         console.log("Retrieved total ketchup count...", count.toNumber());
+        alert("Thanks for voting! :). After your transaction gets through, you have to wait 30 min to vote again");
 
         /*
 * Execute the actual wave from your smart contract
@@ -148,6 +150,7 @@ export default function Home(props) {
 
         let count = await ketchupOrMayoContract.getTotalCountMayo({ gasLimit: 300000 });
         console.log("Retrieved total mayo count...", count.toNumber());
+        alert("Thanks for voting! :). After your transaction gets through, you have to wait 30 min to vote again");
 
         /*
 * Execute the actual wave from your smart contract

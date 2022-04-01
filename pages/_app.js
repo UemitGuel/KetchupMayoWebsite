@@ -5,7 +5,7 @@ import theme from "../theme";
 function MyApp({ Component, pageProps }) {
     return (
         <ChakraProvider theme={theme}>
-            <Box as="main" pt={{ base: 16, md: 32 }} pb={{ base: 24, md: 16 }}>
+            <Box as="main" pt={{ base: 16, md: 16 }} pb={{ base: 16, md: 16 }}>
                 <Component {...pageProps} />
             </Box>
         </ChakraProvider>
