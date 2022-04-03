@@ -8,7 +8,7 @@ export default function Home(props) {
   const [currentAccount, setCurrentAccount] = useState("");
 
   const [allToppings, setAllToppings] = useState([]);
-  const contractAddress = "0xF7338Ab5197361CBF64497E8B3bD84871E14bA90";
+  const contractAddress = "0x7B3D2F17bfa2B2d2Ea3Cb2F4494D25bD7291e6EF";
 
   let allToppingsLast = allToppings[allToppings.length - 1];
   /**
