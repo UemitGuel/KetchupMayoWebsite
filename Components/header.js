@@ -29,9 +29,9 @@ const Header = () => {
                     <HStack ml={-4} spacing={2} paddingRight={8}>
                         <Spacer />
                         <Tag size={'lg'} key={'lg'} variant='outline' colorScheme='white'>
-                            <TagLabel>Rinkeby Testnet</TagLabel>
+                            <TagLabel>Görli Testnet</TagLabel>
                         </Tag>
-                        <Link href='https://rinkeby.etherscan.io/address/0x7B3D2F17bfa2B2d2Ea3Cb2F4494D25bD7291e6EF' isExternal>
+                        <Link href='https://goerli.etherscan.io/address/0x7bd4dcc61d051fc11aff9b7412ba88d262113672' isExternal>
                             See Contract on Etherscan<ExternalLinkIcon mx='2px' />
                         </Link>
                     </HStack>
