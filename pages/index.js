@@ -8,13 +8,13 @@ export default function Home(props) {
   const [currentAccount, setCurrentAccount] = useState("");
 
   const [allToppings, setAllToppings] = useState([]);
-  const contractAddress = "0x7bD4Dcc61D051fc11aFF9B7412Ba88d262113672";
+  const contractAddress = "0x6D234DFF079917153702061087f6D168834D91f9";
 
   let allToppingsLast = allToppings[allToppings.length - 1];
   /**
    * Create a variable here that references the abi content!
    */
-  const contractABI = abi.abi;
+  const contractABI = abi;
 
   const getAllToppings = async () => {
     try {
