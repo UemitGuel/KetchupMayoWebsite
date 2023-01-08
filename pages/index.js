@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import abi from "./utils/KetchupOrMayoPortal.json";
 import React, { useEffect, useState } from "react";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Container, Text, Button, Heading, Image, Stack, Box, Flex, Spacer, Center, Divider, Tag, TagLabel, StackDivider } from "@chakra-ui/react";
 
 
@@ -8,12 +9,13 @@ export default function Home(props) {
   return (
     <Container maxW="container.sm" centerContent>
 
-        <Heading mb={4}>Fries with Ketchup or Mayo?</Heading>
+       <ConnectButton/>
+      <Heading mb={4} pt={8}>Fries with Ketchup or Mayo?</Heading>
         <Text fontSize='xl'>
           Let´s settle this.
         </Text>
       <Flex w='100%'>
-        <Center py={12}>
+        <Center py={8}>
           <Box
             role={'group'}
             p={6}

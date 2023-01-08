@@ -2,14 +2,42 @@ import { ChakraProvider } from '@chakra-ui/react'
 import { Box } from '@chakra-ui/layout'
 import theme from "../theme";
 import Header from '../Components/header';
+import '@rainbow-me/rainbowkit/styles.css';
+import {
+    getDefaultWallets,
+    RainbowKitProvider,
+    darkTheme
+} from '@rainbow-me/rainbowkit';
+import { configureChains, createClient, goerli, WagmiConfig } from 'wagmi';
+import { alchemyProvider } from 'wagmi/providers/alchemy';
+
+const { chains, provider } = configureChains(
+    [goerli],
+    [
+        alchemyProvider({ apiKey: process.env.ALCHEMY_ID }),
+    ]
+);
+const { connectors } = getDefaultWallets({
+    appName: 'Ketchup or Mayo?',
+    chains
+});
+const wagmiClient = createClient({
+    autoConnect: true,
+    connectors,
+    provider
+})
 
 function MyApp({ Component, pageProps }) {
     return (
         <ChakraProvider theme={theme}>
-            <Header />
-            <Box as="main" pt={{ base: 16, md: 24 }} pb={{ base: 16, md: 24 }}>
-                <Component {...pageProps} />
-            </Box>
+            <WagmiConfig client={wagmiClient}>
+                <RainbowKitProvider chains={chains}>
+                    <Header />
+                    <Box as="main" pt={{ base: 16, md: 24 }} pb={{ base: 16, md: 24 }}>
+                        <Component {...pageProps} />
+                    </Box>
+                </RainbowKitProvider>
+            </WagmiConfig>
         </ChakraProvider>
     )
 }
