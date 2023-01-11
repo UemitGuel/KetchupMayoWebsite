@@ -1,15 +1,40 @@
-import { ethers } from "ethers";
-import abi from "./utils/KetchupOrMayoPortal.json";
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { InjectedConnector } from 'wagmi/connectors/injected';
 import React, { useEffect, useState } from "react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import abi from "./utils/KetchupOrMayoPortal.json";
+import { useContractWrite, usePrepareContractWrite } from 'wagmi'
 import { Container, Text, Button, Heading, Image, Stack, Box, Flex, Spacer, Center, Divider, Tag, TagLabel, StackDivider } from "@chakra-ui/react";
 
 
 export default function Home(props) {
+  const { address, isConnected } = useAccount()
+  const { connect } = useConnect({
+    connector: new InjectedConnector(),
+  })
+  const { disconnect } = useDisconnect()
+
+  const contractConfig = {
+    address: '0x3e609d33c73559d9e2030e3ddeC8EB731e2eB31C',
+    abi,
+  };
+
+  const { config: voteKetchupConfig } = usePrepareContractWrite({
+    ...contractConfig,
+    functionName: 'voteKetchup'
+  })
+  const { data, isLoading, isSuccess, write } = useContractWrite(voteKetchupConfig)
+
+  const { config: voteMayoConfig } = usePrepareContractWrite({
+    ...contractConfig,
+    functionName: 'voteMayo'
+  })
+  const { data, isLoading, isSuccess, write } = useContractWrite(voteMayoConfig)
+
+
   return (
     <Container maxW="container.sm" centerContent>
-
-       <ConnectButton/>
+       <ConnectButton />
       <Heading mb={4} pt={8}>Fries with Ketchup or Mayo?</Heading>
         <Text fontSize='xl'>
           Let´s settle this.
@@ -55,7 +80,7 @@ export default function Home(props) {
               />
             </Box>
             <Stack align={'center'}>
-              <Button size='lg' colorScheme='green' mt='24px' loadingText='Transaction in Progress'>
+              <Button size='lg' colorScheme='green' mt='24px' loadingText='Transaction in Progress' disabled={!write} onClick={() => write?.()}>
                 Ketchup, of course!
               </Button>
             </Stack>
@@ -110,6 +135,13 @@ export default function Home(props) {
           </Box>
         </Center>
       </Flex>
+      <div>
+        <button disabled={!write} onClick={() => write?.()}>
+          Feed
+        </button>
+        {isLoading && <div>Check Wallet</div>}
+        {isSuccess && <div>Transaction: {JSON.stringify(data)}</div>}
+      </div>
       {/* <Heading>Who voted how?</Heading>
       <Divider />
       {
