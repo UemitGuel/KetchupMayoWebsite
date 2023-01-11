@@ -1,138 +1,82 @@
 [
     {
         "anonymous": false,
+        "inputs": [],
+        "name": "VoteHasHappend",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "ketchupCount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "mayoCount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
-                "indexed": true,
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "toppings",
+        "outputs": [
+            {
                 "internalType": "address",
-                "name": "from",
+                "name": "voter",
                 "type": "address"
             },
             {
-                "indexed": false,
                 "internalType": "uint256",
                 "name": "timestamp",
                 "type": "uint256"
             },
             {
-                "indexed": false,
-                "internalType": "string",
-                "name": "message",
-                "type": "string"
-            },
-            {
-                "indexed": false,
                 "internalType": "uint256",
-                "name": "totalCountKetchup",
+                "name": "ketchupCount",
                 "type": "uint256"
             },
             {
-                "indexed": false,
                 "internalType": "uint256",
-                "name": "totalCountMayo",
+                "name": "mayoCount",
                 "type": "uint256"
             }
         ],
-        "name": "NewTopping",
-        "type": "event"
+        "stateMutability": "view",
+        "type": "function"
     },
     {
         "inputs": [],
-        "name": "choseKetchup",
+        "name": "voteKetchup",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [],
-        "name": "choseMayo",
+        "name": "voteMayo",
         "outputs": [],
         "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getAllToppings",
-        "outputs": [
-            {
-                "components": [
-                    {
-                        "internalType": "address",
-                        "name": "chose",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "string",
-                        "name": "topping",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "timestamp",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "totalCountKetchup",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "totalCountMayo",
-                        "type": "uint256"
-                    }
-                ],
-                "internalType": "struct KetchupOrMayoPortal.Topping[]",
-                "name": "",
-                "type": "tuple[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getTotalCountKetchup",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getTotalCountMayo",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "lastChosen",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
         "type": "function"
     }
 ]
