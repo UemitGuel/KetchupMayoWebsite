@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import abi from "./utils/KetchupOrMayoPortal.json";
 import { useContractWrite, usePrepareContractWrite } from 'wagmi'
+import { watchContractEvent, readContract } from '@wagmi/core'
 import { Container, Text, Button, Heading, Image, Stack, Box, Flex, Spacer, Center, Divider, Tag, TagLabel, StackDivider } from "@chakra-ui/react";
 
 
@@ -14,31 +15,72 @@ export default function Home(props) {
   })
   const { disconnect } = useDisconnect()
 
+  const [ketchupCount, setKetchupCount] = useState(0);
+  const [mayoCount, setMayoCount] = useState(0);
+
   const contractConfig = {
     address: '0x3e609d33c73559d9e2030e3ddeC8EB731e2eB31C',
     abi,
   };
 
-  const { config: voteKetchupConfig } = usePrepareContractWrite({
+  const { config } = usePrepareContractWrite({
     ...contractConfig,
     functionName: 'voteKetchup'
   })
-  const { data, isLoading, isSuccess, write } = useContractWrite(voteKetchupConfig)
+  const { data, isLoading, isSuccess, write: writeK } = useContractWrite(config)
 
-  const { config: voteMayoConfig } = usePrepareContractWrite({
+  const { config: configM } = usePrepareContractWrite({
     ...contractConfig,
     functionName: 'voteMayo'
   })
-  const { data, isLoading, isSuccess, write } = useContractWrite(voteMayoConfig)
+  const { dataM, isLoadingM, isSuccessM, write: writeM } = useContractWrite(configM)
 
+  const unListenToNewVotes = watchContractEvent({
+    ...contractConfig,
+    eventName: 'VoteHasHappend'
+  },
+    () => {
+      console.log("VoteHasHappend");
+      getVoteCounts();
+      setKetchupCount(2);
+    },
+  )
+
+  const getVoteCounts = async () => {
+    try {
+      const ketchupBN = await readContract({
+        ...contractConfig,
+        functionName: 'ketchupCount',
+      })
+
+      const mayoBN = await readContract({
+        ...contractConfig,
+        functionName: 'mayoCount',
+      })
+
+      const ketchupInt = ketchupBN.toNumber();
+      const mayoInt = mayoBN.toNumber();
+      console.log(ketchupInt);
+      console.log(mayoInt);
+      setKetchupCount(1);
+      setMayoCount(1);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    console.log("huhudehduhedhe");
+    getVoteCounts();
+  }, [])
 
   return (
     <Container maxW="container.sm" centerContent>
-       <ConnectButton />
+      <ConnectButton />
       <Heading mb={4} pt={8}>Fries with Ketchup or Mayo?</Heading>
-        <Text fontSize='xl'>
-          Let´s settle this.
-        </Text>
+      <Text fontSize='xl'>
+        Let´s settle this.
+      </Text>
       <Flex w='100%'>
         <Center py={8}>
           <Box
@@ -80,9 +122,13 @@ export default function Home(props) {
               />
             </Box>
             <Stack align={'center'}>
-              <Button size='lg' colorScheme='green' mt='24px' loadingText='Transaction in Progress' disabled={!write} onClick={() => write?.()}>
+              <Button size='lg' colorScheme='green' mt='24px' loadingText='Transaction in Progress' disabled={!writeK} onClick={() => writeK?.()}>
                 Ketchup, of course!
               </Button>
+                <Tag size='lg' key={'ketchup'} variant='outline' colorScheme='green'>
+                    <TagLabel>Total Ketchup: {ketchupCount}</TagLabel>
+                </Tag>
+              
             </Stack>
           </Box>
         </Center>
@@ -128,20 +174,20 @@ export default function Home(props) {
               />
             </Box>
             <Stack align={'center'}>
-              <Button size='lg' colorScheme='green' mt='24px'>
+              <Button size='lg' colorScheme='green' mt='24px' disabled={!writeM} onClick={() => writeM?.()}>
                 Mayo, obviously!
               </Button>
             </Stack>
           </Box>
         </Center>
       </Flex>
-      <div>
-        <button disabled={!write} onClick={() => write?.()}>
+      {/* <div>
+        <button disabled={!writeM} onClick={() => writeM?.()}>
           Feed
         </button>
         {isLoading && <div>Check Wallet</div>}
         {isSuccess && <div>Transaction: {JSON.stringify(data)}</div>}
-      </div>
+      </div> */}
       {/* <Heading>Who voted how?</Heading>
       <Divider />
       {

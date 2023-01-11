@@ -5,16 +5,16 @@ import Header from '../Components/header';
 import '@rainbow-me/rainbowkit/styles.css';
 import {
     getDefaultWallets,
-    RainbowKitProvider,
-    darkTheme
+    RainbowKitProvider
 } from '@rainbow-me/rainbowkit';
-import { configureChains, createClient, goerli, WagmiConfig } from 'wagmi';
+import { configureChains, createClient, WagmiConfig } from 'wagmi';
+import { goerli } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 
 const { chains, provider } = configureChains(
     [goerli],
     [
-        alchemyProvider({ apiKey: process.env.ALCHEMY_ID }),
+        alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_ID ?? "" }),
     ]
 );
 const { connectors } = getDefaultWallets({
