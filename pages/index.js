@@ -5,8 +5,8 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import abi from "./utils/KetchupOrMayoPortal.json";
 import { useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
 import { watchContractEvent, readContract } from '@wagmi/core'
-import { Container, Link, Alert, AlertIcon, Text, Button, Heading, Image, Stack, Box, Flex, Spacer, Center, Divider, Tag, TagLabel, StackDivider } from "@chakra-ui/react";
-import { ExternalLinkIcon } from '@chakra-ui/icons'
+import { Container, List, ListItem, ListIcon, Progress, Link, Alert, AlertIcon, Text, Button, Heading, Image, Stack, Box, Flex, Spacer, Center, Divider, Tag, TagLabel, StackDivider } from "@chakra-ui/react";
+import { ExternalLinkIcon, ArrowForwardIcon, CheckCircleIcon } from '@chakra-ui/icons'
 
 export default function Home(props) {
   const { address, isConnected } = useAccount()
@@ -28,12 +28,18 @@ export default function Home(props) {
     functionName: 'voteKetchup'
   })
   const { data: dataK, isLoading: isLoadingK, isSuccess: isSuccessK, write: writeK } = useContractWrite(config)
+  const { isLoading: isLoadingKK, isSuccess: isSuccessKK } = useWaitForTransaction({
+    hash: dataK?.hash,
+  })
 
   const { config: configM } = usePrepareContractWrite({
     ...contractConfig,
     functionName: 'voteMayo'
   })
   const { data: dataM, isLoading: isLoadingM, isSuccess: isSuccessM, write: writeM } = useContractWrite(configM)
+  const { isLoading: isLoadingMM, isSuccess: isSuccessMM } = useWaitForTransaction({
+    hash: dataM?.hash,
+  })
 
   // const unListenToNewVotes = watchContractEvent({
   //   ...contractConfig,
@@ -182,11 +188,51 @@ export default function Home(props) {
           </Box>
         </Center>
       </Flex>
+      <List spacing={3}>
+        <ListItem color={(isLoadingK || isLoadingM || isLoadingKK || isLoadingMM || isSuccessK || isSuccessM) ? 'green.500' : 'gray.500'}>
+          <ListIcon as={(isLoadingK || isLoadingM || isLoadingKK || isLoadingMM || isSuccessK || isSuccessM) ? CheckCircleIcon : ArrowForwardIcon} color={(isLoadingK || isLoadingM || isLoadingKK || isLoadingMM || isSuccessK || isSuccessM) ? 'green.500' : 'gray.500'} />
+          Chose Ketchup or Mayo
+        </ListItem>
+        <ListItem color={(isLoadingKK || isLoadingMM || isSuccessK || isSuccessM) ? 'green.500' : 'gray.500'}>
+          <ListIcon as={(isLoadingKK || isLoadingMM || isSuccessK || isSuccessM) ? CheckCircleIcon : ArrowForwardIcon} color={(isLoadingKK || isLoadingMM || isSuccessK || isSuccessM) ? 'green.500' : 'gray.500'} />
+          Confirm Transaction in Wallet
+        </ListItem>
+        <ListItem color={(isSuccessKK || isSuccessMM) ? 'green.500' : 'gray.500'}>
+          <ListIcon as={(isSuccessKK || isSuccessMM) ? CheckCircleIcon : ArrowForwardIcon} color={(isSuccessKK || isSuccessMM) ? 'green.500' : 'gray.500'} />
+          Waiting for Pending Transaction
+          {
+            ((isSuccessK && !isSuccessKK) || (isSuccessM && !isSuccessMM)) && <Progress size='xs' isIndeterminate color='green.500' />
+          }
+        </ListItem>
+      </List>
+      {isSuccessMM &&
+        <Link href={`https://goerli.etherscan.io/tx/` + dataM.hash} py={6} isExternal>
+          <Alert status='success' variant='solid'>
+            <AlertIcon />
+            Transaction Successfully executed. See on Etherscan<ExternalLinkIcon mx='2px' />
+          </Alert>
+        </Link>
+      }
+      {isSuccessKK &&
+        <Link href={`https://goerli.etherscan.io/tx/` + dataK.hash} py={6} isExternal>
+          <Alert status='success' variant='solid'>
+            <AlertIcon />
+            Transaction Successfully executed. See on Etherscan<ExternalLinkIcon mx='2px' />
+          </Alert>
+        </Link>
+      }
+      {/* {isLoadingK &&
+        <Link href={`https://goerli.etherscan.io/tx/` + dataK.hash} isExternal>
+          <Alert status='success' variant='solid'>
+            <AlertIcon />
+            Transaction Successfully executed<ExternalLinkIcon mx='2px' />
+          </Alert>
+        </Link>}
       {isSuccessK &&
         <Link href={`https://goerli.etherscan.io/tx/` + dataK.hash} isExternal>
           <Alert status='success' variant='solid'>
             <AlertIcon />
-            Transaction submitted! Check the status on Etherscan<ExternalLinkIcon mx='2px' />
+            Transaction Successfully executed<ExternalLinkIcon mx='2px' />
           </Alert>
         </Link>}
       {isSuccessM &&
@@ -195,7 +241,7 @@ export default function Home(props) {
             <AlertIcon />
             Transaction submitted! Check the status on Etherscan<ExternalLinkIcon mx='2px' />
           </Alert>
-        </Link>}
+        </Link>} */}
       {/* <button disabled={isLoading}>
         {isLoading ? 'Sending...' : 'Send'}
       </button>
