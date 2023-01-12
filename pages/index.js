@@ -3,10 +3,10 @@ import { InjectedConnector } from 'wagmi/connectors/injected';
 import React, { useEffect, useState } from "react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import abi from "./utils/KetchupOrMayoPortal.json";
-import { useContractWrite, usePrepareContractWrite } from 'wagmi'
+import { useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
 import { watchContractEvent, readContract } from '@wagmi/core'
-import { Container, Text, Button, Heading, Image, Stack, Box, Flex, Spacer, Center, Divider, Tag, TagLabel, StackDivider } from "@chakra-ui/react";
-
+import { Container, Link, Alert, AlertIcon, Text, Button, Heading, Image, Stack, Box, Flex, Spacer, Center, Divider, Tag, TagLabel, StackDivider } from "@chakra-ui/react";
+import { ExternalLinkIcon } from '@chakra-ui/icons'
 
 export default function Home(props) {
   const { address, isConnected } = useAccount()
@@ -27,24 +27,23 @@ export default function Home(props) {
     ...contractConfig,
     functionName: 'voteKetchup'
   })
-  const { data, isLoading, isSuccess, write: writeK } = useContractWrite(config)
+  const { data: dataK, isLoading: isLoadingK, isSuccess: isSuccessK, write: writeK } = useContractWrite(config)
 
   const { config: configM } = usePrepareContractWrite({
     ...contractConfig,
     functionName: 'voteMayo'
   })
-  const { dataM, isLoadingM, isSuccessM, write: writeM } = useContractWrite(configM)
+  const { data: dataM, isLoading: isLoadingM, isSuccess: isSuccessM, write: writeM } = useContractWrite(configM)
 
-  const unListenToNewVotes = watchContractEvent({
-    ...contractConfig,
-    eventName: 'VoteHasHappend'
-  },
-    () => {
-      console.log("VoteHasHappend");
-      getVoteCounts();
-      setKetchupCount(2);
-    },
-  )
+  // const unListenToNewVotes = watchContractEvent({
+  //   ...contractConfig,
+  //   eventName: 'VoteHasHappend'
+  // },
+  //   () => {
+  //     console.log("VoteHasHappend");
+  //     getVoteCounts();
+  //   },
+  // )
 
   const getVoteCounts = async () => {
     try {
@@ -62,8 +61,8 @@ export default function Home(props) {
       const mayoInt = mayoBN.toNumber();
       console.log(ketchupInt);
       console.log(mayoInt);
-      setKetchupCount(1);
-      setMayoCount(1);
+      setKetchupCount(ketchupBN.toNumber());
+      setMayoCount(mayoBN.toNumber());
     } catch (error) {
       console.log(error);
     }
@@ -122,13 +121,12 @@ export default function Home(props) {
               />
             </Box>
             <Stack align={'center'}>
-              <Button size='lg' colorScheme='green' mt='24px' loadingText='Transaction in Progress' disabled={!writeK} onClick={() => writeK?.()}>
+              <Button isLoading={isLoadingK} size='lg' colorScheme='green' mt='24px' loadingText='Check Wallet' disabled={isLoadingK} onClick={() => writeK?.()}>
                 Ketchup, of course!
               </Button>
-                <Tag size='lg' key={'ketchup'} variant='outline' colorScheme='green'>
-                    <TagLabel>Total Ketchup: {ketchupCount}</TagLabel>
-                </Tag>
-              
+              <Tag size='lg' key={'ketchup'} variant='outline' colorScheme='green'>
+                <TagLabel>Total Ketchup: {ketchupCount}</TagLabel>
+              </Tag>
             </Stack>
           </Box>
         </Center>
@@ -174,13 +172,41 @@ export default function Home(props) {
               />
             </Box>
             <Stack align={'center'}>
-              <Button size='lg' colorScheme='green' mt='24px' disabled={!writeM} onClick={() => writeM?.()}>
+              <Button isLoading={isLoadingM} size='lg' colorScheme='green' mt='24px' loadingText='Check Wallet' disabled={isLoadingM} onClick={() => writeM?.()}>
                 Mayo, obviously!
               </Button>
+              <Tag size='lg' key={'mayo'} variant='outline' colorScheme='green'>
+                <TagLabel>Total Mayo: {mayoCount}</TagLabel>
+              </Tag>
             </Stack>
           </Box>
         </Center>
       </Flex>
+      {isSuccessK &&
+        <Link href={`https://goerli.etherscan.io/tx/` + dataK.hash} isExternal>
+          <Alert status='success' variant='solid'>
+            <AlertIcon />
+            Transaction submitted! Check the status on Etherscan<ExternalLinkIcon mx='2px' />
+          </Alert>
+        </Link>}
+      {isSuccessM &&
+        <Link href={`https://goerli.etherscan.io/tx/` + dataM.hash} isExternal>
+          <Alert status='success' variant='solid'>
+            <AlertIcon />
+            Transaction submitted! Check the status on Etherscan<ExternalLinkIcon mx='2px' />
+          </Alert>
+        </Link>}
+      {/* <button disabled={isLoading}>
+        {isLoading ? 'Sending...' : 'Send'}
+      </button>
+      {isSuccess && (
+        <div>
+          Successfully sent  ether to 
+          <div>
+            <a href={`https://etherscan.io/tx/${dataK?.hash}`}>Etherscan</a>
+          </div>
+        </div>
+      )} */}
       {/* <div>
         <button disabled={!writeM} onClick={() => writeM?.()}>
           Feed
