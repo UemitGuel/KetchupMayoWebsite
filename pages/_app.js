@@ -27,6 +27,7 @@ const wagmiClient = createClient({
     provider
 })
 
+
 function MyApp({ Component, pageProps }) {
     return (
         <ChakraProvider theme={theme}>
