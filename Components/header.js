@@ -31,7 +31,7 @@ const Header = () => {
                         <Tag size={'lg'} key={'lg'} variant='outline' colorScheme='white'>
                             <TagLabel>Görli Testnet</TagLabel>
                         </Tag>
-                        <Link href='https://goerli.etherscan.io/address/0x6D234DFF079917153702061087f6D168834D91f9' isExternal>
+                        <Link href='https://goerli.etherscan.io/address/0x3e609d33c73559d9e2030e3ddeC8EB731e2eB31C#code' isExternal>
                             See Contract on Etherscan<ExternalLinkIcon mx='2px' />
                         </Link>
                     </HStack>
